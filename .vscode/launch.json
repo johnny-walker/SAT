@@ -4,32 +4,17 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        /* SAT
-        {
-            "name": "Python: SAT",
-            "type": "python",
-            "request": "launch",
-            "program": "demo/video/sat_video.py",
-            "console": "integratedTerminal",
-            "args": ["--config", "experiments/sat/test/sat_res50-davis17.yaml", 
-                     "--device", "cpu", 
-                     "--video",  "video/beach.mp4", 
-                     "--output", "video/sat"
-                    ],
-        },
-        */
-        ///* Pgm01       
+        // Pgm01       
         {
             "name": "Python: Pgm01",
             "type": "python",
             "request": "launch",
             "program": "pgm01/Pgm01.py",
             "console": "integratedTerminal",
-            "args":  [ "--video", "video/beach.mp4", 
-                       "--path",  "video/beach",
-                       "--mask",  "video/beach_mask"
+            "args":  [ //"--video", "video/tennis.mp4", 
+                       //"--path",  "video/beach",
+                       //"--mask",  "video/beach_mask"
                      ],
         }
-        //*/
     ]
 }

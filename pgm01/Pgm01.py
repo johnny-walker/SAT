@@ -114,7 +114,7 @@ class VideoInpaint(PgmBase):
             self.refreshFrame() 
 
         self.sat = SAT(self.args)
-        if self.sat.initData(self.videoFrames, self.selectionPts, 0.5):
+        if self.sat.initData(self.videoFrames, self.selectionPts, 0.005):
             self.sat.segmentFrames(callback)
 
     # --- handle frames ---
@@ -208,17 +208,24 @@ class VideoInpaint(PgmBase):
         self.destroyDrawObjects()
 
     def onSave(self):
-        if len(self.maskFrames) > 0:
-            folderPath = filedialog.askdirectory()
-            if len(folderPath) > 0 : # if Esc path = ''
-                idx = 0
-                for mask in self.maskFrames:
-                    frame_file = os.path.join(folderPath, "{:06d}_mask.jpg".format(idx))
-                    cv2.imwrite(frame_file, mask)
-                    idx += 1
-                self.showMessage("Mask saved to folder: {0}".format(folderPath))
-            else:
-                self.showMessage("Escape saving")
+        # save frames
+        if len(self.args.path) > 0:
+            if not os.path.exists(self._state[self.args.path]):
+                os.makedirs(self.args.path)
+            idx = 0
+            for frame in self.videoFrames:
+                path = os.path.join(self.args.path, "{:06d}.jpg".format(idx))
+                cv2.imwrite(path, frame)
+                idx += 1 
+        # save masks
+        if len(self.args.mask) > 0:
+            if not os.path.exists(self._state[self.args.mask]):
+                os.makedirs(self.args.mask)
+            idx = 0
+            for mask in self.maskFrames:
+                path = os.path.join(self.args.mask, "{:06d}_mask.jpg".format(idx))
+                cv2.imwrite(path, mask)
+                idx += 1
 
     ### --- event handlers ---
     def onKey(self, event):
@@ -362,9 +369,9 @@ class VideoInpaint(PgmBase):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--path', default='video/tennis', help="input data folder")
-    parser.add_argument('--mask', default='video/tennis_mask', help="input data mask folder")
-    parser.add_argument('--video', default='video/tennis.mp4', help="input video")
+    parser.add_argument('--path', default='video/sat/beach', help="input data folder")
+    parser.add_argument('--mask', default='video/sat/beach_mask', help="input data mask folder")
+    parser.add_argument('--video', default='video/beach.mp4', help="input video")
     parser.add_argument('--alpha', default=0.2, help="alpha blending") 
 
     # RAFT model arguments
@@ -384,13 +391,13 @@ if __name__ == '__main__':
         img = None
         program = VideoInpaint(tk.Tk(), width, height, args)
         program.loadData()
+        program.run()
     else:   # process video
         videoObject = cv2.VideoCapture(args.video)
         if videoObject.isOpened():
             ret, frame = videoObject.read()
             if ret:
                 height, width = frame.shape[0], frame.shape[1]
-            program = VideoInpaint(tk.Tk(), width, height, args)
-            program.openVideo()
-    
-    program.run()
+                program = VideoInpaint(tk.Tk(), width, height, args)
+                program.openVideo()
+                program.run()
