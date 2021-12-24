@@ -63,7 +63,7 @@ class VideoInpaint(PgmBase):
 
     # thread function
     def readVideoFrame(self):
-        def initVideoFrame():
+        def _initVideoFrame():
             self.videoObject = cv2.VideoCapture(self.videofile)
             if self.videoObject.isOpened():
                 ret, frame = self.videoObject.read()
@@ -74,7 +74,7 @@ class VideoInpaint(PgmBase):
                 return ret
             return False
 
-        def readFrame():
+        def _readFrame():
             ret, frame = self.videoObject.read()
             if ret:
                 self.frameIndex += 1
@@ -83,11 +83,11 @@ class VideoInpaint(PgmBase):
             else:
                 return False # break
             return True   # continue reading
-            
-        ret = initVideoFrame()
+
+        ret = _initVideoFrame()
         if ret:
             while ret: 
-                ret = readFrame()
+                ret = _readFrame()
                 if self.threadEventPlayback.wait(0):
                     break
             self.videoObject.release()
@@ -106,15 +106,15 @@ class VideoInpaint(PgmBase):
         self.isSelection = False
 
     def segmentFrames(self):
-        def callback(mask, index):
+        def _callback(mask, index):
             print('process frame:', index)
             self.maskFrames.append(mask)
             self.frameIndex = index
             self.refreshFrame() 
 
         self.sat = SAT(self.args)
-        if self.sat.initData(self.videoFrames, self.selectionPts, 0.005):
-            self.sat.segmentFrames(callback)
+        if self.sat.initData(self.videoFrames, self.selectionPts, self.args.threshold):
+            self.sat.segmentFrames(_callback)
         print('thread stopped, sagmentation done...')
 
     # --- handle frames ---
@@ -378,6 +378,7 @@ if __name__ == '__main__':
     parser.add_argument('--mask', default='video/sat/beach_mask', help="input data mask folder")
     parser.add_argument('--video', default='video/beach.mp4', help="input video")
     parser.add_argument('--alpha', default=0.2, help="alpha blending") 
+    parser.add_argument('--threshold', default=0.005, help="threshold to create binary mask") 
 
     # RAFT model arguments
     parser.add_argument('--model', default='RAFT/models/raft-things.pth', help="restore checkpoint")
