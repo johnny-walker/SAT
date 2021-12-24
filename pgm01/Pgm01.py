@@ -83,7 +83,7 @@ class VideoInpaint(PgmBase):
             else:
                 return False # break
             return True   # continue reading
-                    
+            
         ret = initVideoFrame()
         if ret:
             while ret: 
@@ -92,7 +92,6 @@ class VideoInpaint(PgmBase):
                     break
             self.videoObject.release()
             self.threadEventPlayback.clear()
-        
         self.isSelection = True
         print('thread stopped, all frames in memery...')
     
@@ -116,6 +115,7 @@ class VideoInpaint(PgmBase):
         self.sat = SAT(self.args)
         if self.sat.initData(self.videoFrames, self.selectionPts, 0.005):
             self.sat.segmentFrames(callback)
+        print('thread stopped, sagmentation done...')
 
     # --- handle frames ---
     def loadData(self):
@@ -210,7 +210,7 @@ class VideoInpaint(PgmBase):
     def onSave(self):
         # save frames
         if len(self.args.path) > 0:
-            if not os.path.exists(self._state[self.args.path]):
+            if not os.path.exists(self.args.path):
                 os.makedirs(self.args.path)
             idx = 0
             for frame in self.videoFrames:
@@ -219,19 +219,24 @@ class VideoInpaint(PgmBase):
                 idx += 1 
         # save masks
         if len(self.args.mask) > 0:
-            if not os.path.exists(self._state[self.args.mask]):
+            if not os.path.exists(self.args.mask):
                 os.makedirs(self.args.mask)
             idx = 0
             for mask in self.maskFrames:
                 path = os.path.join(self.args.mask, "{:06d}_mask.jpg".format(idx))
                 cv2.imwrite(path, mask)
                 idx += 1
+        print('saving done...')
 
     ### --- event handlers ---
     def onKey(self, event):
         if event.char == event.keysym or len(event.char) == 1:
             if event.keysym in ['Left', 'Right', 'Up', 'Down'] :
                 self.onKeyArrors(event.keysym)
+            elif event.char == ',':
+                self.onPrev()     
+            elif event.char == '.':
+                self.onNext()     
             elif event.keysym == 'space':
                 self.doSegmentation()     
             elif event.keysym == 'Escape':
