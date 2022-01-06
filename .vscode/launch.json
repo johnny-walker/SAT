@@ -11,9 +11,9 @@
             "request": "launch",
             "program": "pgm01/Pgm01.py",
             "console": "integratedTerminal",
-            "args":  [ //"--video", "video/tennis.mp4", 
-                       //"--path",  "video/beach",
-                       //"--mask",  "video/beach_mask"
+            "args":  [ "--video", "video/bumps.mp4", 
+                       "--path",  "video/sat/bumps",
+                       "--mask",  "video/sat/bumps_mask"
                      ],
         }
     ]

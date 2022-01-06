@@ -77,7 +77,6 @@ class VideoInpaint(PgmBase):
         def _readFrame():
             ret, frame = self.videoObject.read()
             if ret:
-                self.frameIndex += 1
                 frame = self.resize(frame)
                 self.videoFrames.append(frame)
             else:
@@ -228,6 +227,14 @@ class VideoInpaint(PgmBase):
                 idx += 1
         print('saving done...')
 
+    def saveMP4(self):
+        filename = os.path.join(args.path, 'video.mp4')
+        _fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = cv2.VideoWriter(filename, _fourcc, 30.0, (self.videoFrames[0].shape[1],self.videoFrames[0].shape[0]))
+        for frame in self.videoFrames:
+            out.write(frame)
+        print('saved file:', filename)
+
     ### --- event handlers ---
     def onKey(self, event):
         if event.char == event.keysym or len(event.char) == 1:
@@ -237,6 +244,10 @@ class VideoInpaint(PgmBase):
                 self.onPrev()     
             elif event.char == '.':
                 self.onNext()     
+            elif event.char == 's':
+                self.onSave()     
+            elif event.char == 'v':
+                self.saveMP4() 
             elif event.keysym == 'space':
                 self.doSegmentation()     
             elif event.keysym == 'Escape':
@@ -268,7 +279,8 @@ class VideoInpaint(PgmBase):
     ### --- update frame content---
     def refreshFrame(self):
         self.curFrame = self.videoFrames[self.frameIndex].copy()
-        self.curMask = self.maskFrames[self.frameIndex].copy()
+        if len(self.maskFrames) > 0 and self.frameIndex < len(self.maskFrames):
+            self.curMask = self.maskFrames[self.frameIndex].copy()
         self.drawFrame()
 
     def drawFrame(self):
@@ -374,9 +386,10 @@ class VideoInpaint(PgmBase):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--path', default='video/sat/beach', help="input data folder")
-    parser.add_argument('--mask', default='video/sat/beach_mask', help="input data mask folder")
-    parser.add_argument('--video', default='video/beach.mp4', help="input video")
+    parser.add_argument('--path', default='video/sat/cheetah', help="input data folder")
+    parser.add_argument('--mask', default='video/sat/cheetah_mask', help="input data mask folder")
+    parser.add_argument('--video', default='video/cheetah.mp4', help="input video")
+    parser.add_argument('--scaler', default=1.0, help="resize video frames") 
     parser.add_argument('--alpha', default=0.2, help="alpha blending") 
     parser.add_argument('--threshold', default=0.005, help="threshold to create binary mask") 
 
@@ -403,7 +416,7 @@ if __name__ == '__main__':
         if videoObject.isOpened():
             ret, frame = videoObject.read()
             if ret:
-                height, width = frame.shape[0], frame.shape[1]
+                height, width = int(frame.shape[0]*args.scaler), int(frame.shape[1]*args.scaler)
                 program = VideoInpaint(tk.Tk(), width, height, args)
                 program.openVideo()
                 program.run()
