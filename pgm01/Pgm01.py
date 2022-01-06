@@ -240,13 +240,17 @@ class VideoInpaint(PgmBase):
         if event.char == event.keysym or len(event.char) == 1:
             if event.keysym in ['Left', 'Right', 'Up', 'Down'] :
                 self.onKeyArrors(event.keysym)
-            elif event.char == ',':
+            elif event.char in ['<',"'"]:
                 self.onPrev()     
-            elif event.char == '.':
+            elif event.char in ['>', '.']:
                 self.onNext()     
-            elif event.char == 's':
+            elif event.char in ['+', '=']:
+                self.onBrushAdd()     
+            elif event.char in ['-', '_']:
+                self.onBrushErase() 
+            elif event.char in ['s', 'S']:
                 self.onSave()     
-            elif event.char == 'v':
+            elif event.char in ['v', 'V']:
                 self.saveMP4() 
             elif event.keysym == 'space':
                 self.doSegmentation()     
